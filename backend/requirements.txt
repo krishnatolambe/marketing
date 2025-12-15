@@ -1,0 +1,19 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pymongo==4.6.1
+motor==3.3.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+pydantic[Email]==2.5.2
+pydantic-settings==2.1.0
+python-decouple==3.8
+aiofiles==23.2.0
+Pillow==10.1.0
+aioredis==2.0.1
+aiohttp==3.9.1
+# Llama dependencies
+transformers==4.36.0
+torch>=2.1.0
+accelerate==0.24.1
+requests==2.31.0

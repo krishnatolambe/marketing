@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:6.0
+    container_name: linkedin_marketing_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      
+  # Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: linkedin_marketing_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      
+  # Backend service
+  backend:
+    build: ./backend
+    container_name: linkedin_marketing_backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/linkedin-auto-marketer?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_very_secure_random_jwt_secret_key_here_min_32_chars
+      - ENCRYPTION_KEY=your_very_secure_random_encryption_key_at_least_32_characters
+      - LOG_LEVEL=info
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: linkedin_marketing_frontend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - VITE_BACKEND_URL=http://localhost:3001
+
+volumes:
+  mongodb_data:
+  redis_data:

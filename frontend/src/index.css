@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Futuristic dark theme with neon gradients */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Neon cyan primary */
+    --primary: 191 100% 50%;
+    --primary-foreground: 222 47% 4%;
+
+    /* Electric purple secondary */
+    --secondary: 270 100% 60%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Hot pink accent */
+    --accent: 330 100% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 15%;
+    --input: 217 33% 12%;
+    --ring: 191 100% 50%;
+
+    --radius: 1rem;
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 191 100% 50%;
+    --sidebar-primary-foreground: 222 47% 4%;
+    --sidebar-accent: 217 33% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 15%;
+    --sidebar-ring: 191 100% 50%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(191 100% 50%), hsl(270 100% 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(270 100% 60%), hsl(330 100% 60%));
+    --gradient-glow: linear-gradient(135deg, hsl(191 100% 50% / 0.3), hsl(270 100% 60% / 0.3));
+    
+    /* Shadows */
+    --shadow-neon: 0 0 30px hsl(191 100% 50% / 0.5);
+    --shadow-purple: 0 0 30px hsl(270 100% 60% / 0.4);
+    --shadow-pink: 0 0 30px hsl(330 100% 60% / 0.4);
+    --shadow-glass: 0 8px 32px 0 hsl(222 47% 4% / 0.37);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Glass morphism */
+  .glass {
+    @apply bg-card/40 backdrop-blur-xl border border-border/50;
+  }
+
+  .glass-strong {
+    @apply bg-card/60 backdrop-blur-2xl border border-border;
+  }
+
+  /* Neon glow effects */
+  .glow-cyan {
+    box-shadow: 0 0 20px hsl(191 100% 50% / 0.5);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(270 100% 60% / 0.5);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 20px hsl(330 100% 60% / 0.5);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animated gradient background */
+  .animated-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(191 100% 50%),
+      hsl(270 100% 60%),
+      hsl(330 100% 60%),
+      hsl(191 100% 50%)
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Pulse glow animation */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(191 100% 50% / 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(191 100% 50% / 0.6);
+    }
+  }
+}
