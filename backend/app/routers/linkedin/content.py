@@ -10,6 +10,7 @@ import re
 from ...database import get_database
 from ...services.ai_services import generate_linkedin_post_with_llama
 from ...auth_utils import get_current_active_user
+from ...services.email_service import email_service
 
 # Import logging
 from ...logging_config import get_logger
@@ -78,6 +79,12 @@ class SavePostResponse(BaseModel):
     success: bool
     post: dict
 
+
+class EmailPostRequest(BaseModel):
+    postId: str = Field(..., description="ID of the post to email")
+    toEmails: List[str] = Field(..., description="List of recipient email addresses")
+    subject: Optional[str] = Field(None, description="Email subject (optional)")
+
 @router.post("/generate", response_model=GeneratePostResponse)
 async def generate_post(request: GeneratePostRequest):
     """
@@ -141,6 +148,68 @@ async def save_post(request: SavePostRequest, current_user: dict = Depends(get_c
         return SavePostResponse(success=True, post=post_data)
     except Exception as e:
         logger.error(f"Error saving post: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+class EmailPostResponse(BaseModel):
+    success: bool
+    message: str
+
+
+@router.post("/email", response_model=EmailPostResponse)
+async def email_post(request: EmailPostRequest, current_user: dict = Depends(get_current_active_user)):
+    """
+    Send a post via email with optional image attachment.
+    """
+    try:
+        # Get database connection
+        database = await get_database()
+        posts_collection = database["posts"]
+        
+        # Find the post by ID and user ID
+        post = await posts_collection.find_one({
+            "_id": request.postId,
+            "userId": current_user["user_id"]
+        })
+        
+        if not post:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Post not found"
+            )
+        
+        # Prepare email content
+        subject = request.subject or f"AI-Generated LinkedIn Post: {post.get('content', '')[:50]}..."
+        content = post.get('content', '')
+        
+        # Add hashtags if they exist
+        hashtags = post.get('hashtags', [])
+        if hashtags:
+            content += f"\n\nHashtags: {' '.join(['#' + tag for tag in hashtags])}"
+        
+        # Send email
+        success = email_service.send_email_with_image(
+            to_emails=request.toEmails,
+            subject=subject,
+            content=content,
+            image_url=post.get('imageUrl')
+        )
+        
+        if success:
+            return EmailPostResponse(success=True, message="Email sent successfully")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send email"
+            )
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Error emailing post: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

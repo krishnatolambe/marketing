@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     max_connections: int = int(os.getenv("MAX_CONNECTIONS", 100))
     min_connections: int = int(os.getenv("MIN_CONNECTIONS", 10))
     connection_timeout: int = int(os.getenv("CONNECTION_TIMEOUT", 20))
+    # Email configuration
+    email_host: str = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    email_port: int = int(os.getenv("EMAIL_PORT", 587))
+    email_username: str = os.getenv("EMAIL_USERNAME", "")
+    email_password: str = os.getenv("EMAIL_PASSWORD", "")
+    email_use_tls: bool = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
     
     class Config:
         env_file = ".env"

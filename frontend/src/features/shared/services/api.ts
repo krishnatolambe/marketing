@@ -319,6 +319,17 @@ class ApiService {
       method: 'GET',
     });
   }
+
+  // Email endpoint
+  async emailPost(emailData: { postId: string; toEmails: string[]; subject?: string }) {
+    return this.request('/content/email', {
+      method: 'POST',
+      body: JSON.stringify(emailData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
 }
 
 export const api = new ApiService();

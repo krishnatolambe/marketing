@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, RefreshCw, Send, Save, Calendar, Image as ImageIcon, X } from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Send, Save, Calendar, Image as ImageIcon, X, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { api } from "@/features/shared/services/api";
 import ScheduleModal from "@/features/scheduler/components/ScheduleModal";
 import LinkedInPostPreview from "@/features/content/components/LinkedInPostPreview";
+import EmailModal from "@/features/content/components/EmailModal";
 
 export default function Generate() {
   const [topic, setTopic] = useState("");
@@ -22,7 +23,13 @@ export default function Generate() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEmailComplete = () => {
+    // This function can be used to handle any post-email actions
+    console.log("Email sent successfully");
+  };
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -177,6 +184,39 @@ export default function Generate() {
       console.error("Error posting to LinkedIn:", error);
       toast.error(error.message || "Failed to post to LinkedIn. Please try again.");
     }
+  };
+
+  const handleEmailClick = async () => {
+    if (!generatedPost.trim()) {
+      toast.error("Please generate a post first");
+      return;
+    }
+
+    // If post is not saved yet, save it first
+    let postId = savedPostId;
+    if (!postId) {
+      try {
+        const response = await api.savePost({ 
+          content: generatedPost,
+          imageUrl: previewUrl || undefined
+        });
+        
+        if (response.error) {
+          toast.error(response.error);
+          return;
+        }
+        
+        postId = response.post._id;
+        setSavedPostId(postId);
+      } catch (error: any) {
+        console.error("Error saving post:", error);
+        toast.error(error.message || "Failed to save post. Please try again.");
+        return;
+      }
+    }
+
+    // Show email modal
+    setShowEmailModal(true);
   };
 
   const refreshScheduledPosts = () => {
@@ -430,6 +470,14 @@ export default function Generate() {
                     <Send className="w-4 h-4 mr-2" />
                     Post
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleEmailClick}
+                    className="glass border-primary text-primary hover:bg-primary/20 glow-cyan"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </Button>
                 </div>
               </motion.div>
             ) : (
@@ -458,6 +506,16 @@ export default function Generate() {
             imageUrl={previewUrl}
             onClose={() => setShowPreview(false)}
             onPost={handlePostConfirm}
+          />
+        )}
+
+        {showEmailModal && savedPostId && (
+          <EmailModal
+            postId={savedPostId}
+            content={generatedPost}
+            imageUrl={previewUrl}
+            onClose={() => setShowEmailModal(false)}
+            onEmail={handleEmailComplete}
           />
         )}
       </motion.div>
